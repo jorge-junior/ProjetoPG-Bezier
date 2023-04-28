@@ -7,6 +7,10 @@ function setup() {
 // Lista de pontos de controle
 let points = [];
 
+let pontoproximo = 0;
+
+let existe = false;
+
 //nEvaluation
 let nEvaluations = 50;
 
@@ -29,14 +33,63 @@ buttonclear.addEventListener('click', function() {
     curve = deCasteljau(points, nEvaluations);
 });
 
+
+function mousePressed() {
+    points.forEach(ponto => {
+      let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
+      if (distancia < 30) {
+          distancia_proximo = dist(points[pontoproximo].x, points[pontoproximo].y, mouseX, mouseY);
+          if (distancia <= distancia_proximo) {
+              pontoproximo = points.indexOf(ponto);
+              existe = true;
+          }
+      }
+  });
+}
+
+function mouseDragged() {
+    if (existe) {
+        points[pontoproximo].x = mouseX;
+        points[pontoproximo].y = mouseY;
+        
+        curve = deCasteljau(points, nEvaluations);
+    }
+}
+
+function mouseReleased(){
+    pontoproximo = 0;
+    existe = false;
+}
+
+
 // função que adicionas os pontos as curva de benzier
 function mouseClicked() {
-  let newPoint = createVector(mouseX, mouseY); 
-  if (mouseX <= 400 && mouseY <= 400){
+  let newPoint = createVector(mouseX, mouseY);
+  if (points.length == 0 && mouseX <= 400 && mouseY <= 400) {
       append(points, newPoint); 
       curve = deCasteljau(points, nEvaluations);
   }
+  
+  let existe2 = false;
+  pontoexiste = 0;
+  points.forEach(ponto => {
+      let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
+      if (distancia < 30) {
+          distancia_proximo = dist(points[pontoexiste].x, points[pontoexiste].y, mouseX, mouseY);
+          if (distancia <= distancia_proximo) {
+              pontoexiste = points.indexOf(ponto);
+              existe2 = true;
+          }
+      }
+  });
+
+  if (mouseX <= 400 && mouseY <= 400 && !existe2){
+      append(points, newPoint); 
+      curve = deCasteljau(points, nEvaluations);
+  }
+  existe = true;
 }
+
 
 // Desenha na tela
 function draw() {
@@ -65,7 +118,21 @@ function draw() {
   points.forEach(ponto => {
     point(ponto.x, ponto.y);
   });
-
+  
+  
+  // Função que mostra quais pontos podem ser selecionados e as areas que nao é possivel criar um ponto
+  pontoselecionado = 0;
+  points.forEach(ponto => {
+      let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
+      if (distancia < 30) {
+          let distancia_prox = dist(points[pontoselecionado].x, points[pontoselecionado].y, mouseX, mouseY);
+          if (distancia <= distancia_prox) {
+              pontoselecionado = points.indexOf(ponto);
+              ellipse(points[pontoselecionado].x, points[pontoselecionado].y, 30);
+          }
+      }
+  });
+  
 }
 
 // Função de interpolação
