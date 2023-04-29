@@ -4,18 +4,24 @@ function setup() {
   let slider = select('#slider'); //// recebe as informaçoes do input do slider
 }
 
+// VARIAVEIS
 // Lista de pontos de controle
 let points = [];
 
-let pontoproximo = 0;
 
-let existe = false;
+
+//cores
+let cor_curva = 'rgb(203,75,203)'
+let cor_pontc ='rgb(203,75,203)'
+let cor_polic = 'rgba(203,75,203,0.5)'
 
 //nEvaluation
 let nEvaluations = 50;
 
 // Calcula a curva de Bezier
 let curve = deCasteljau(points, nEvaluations);
+
+// BOTOES
 
 // cria uma nova curva caso s slider se mova com o valor selecionado
 slider.addEventListener('input', sliderChanged);
@@ -33,22 +39,61 @@ buttonclear.addEventListener('click', function() {
     curve = deCasteljau(points, nEvaluations);
 });
 
+//ocultar/mostrar curvas
+const curvasCheckbox = document.getElementById("curvas");
+curvas.addEventListener("change", function() {
+  if (curvasCheckbox.checked) {
+    cor_curva = "rgba(203,75,203,0)";
+  }
+  else {
+    cor_curva = "rgb(203,75,203)";
+  }
+});
+
+//ocultar/mostrar pontos de controle
+//tá ocultando as partes que intersectam com os poligonais
+const pontcCheckbox = document.getElementById("pontc");
+pontc.addEventListener("change", function() {
+  if (pontcCheckbox.checked) {
+    cor_pontc = "rgba(203,75,203,0)";
+  }
+  else {
+    cor_pontc = "rgb(203,75,203)";
+  }
+});
+
+//ocultar/mostrar poligonais de controle
+//tá ocultando as partes que cruzam com a curva
+const policCheckbox = document.getElementById("polic");
+polic.addEventListener("change", function() {
+  if (policCheckbox.checked) {
+    cor_polic = "rgba(203,75,203,0)";
+  }
+  else {
+    cor_polic = "rgba(203,75,203,0.5)";
+  }
+});
+
+
+
+let pontoproximo = 0;
+let existe1 = false;  
 
 function mousePressed() {
     points.forEach(ponto => {
       let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
       if (distancia < 30) {
-          distancia_proximo = dist(points[pontoproximo].x, points[pontoproximo].y, mouseX, mouseY);
+          let distancia_proximo = dist(points[pontoproximo].x, points[pontoproximo].y, mouseX, mouseY);
           if (distancia <= distancia_proximo) {
               pontoproximo = points.indexOf(ponto);
-              existe = true;
+              existe1 = true;
           }
       }
   });
 }
 
 function mouseDragged() {
-    if (existe) {
+    if (existe1) {
         points[pontoproximo].x = mouseX;
         points[pontoproximo].y = mouseY;
         
@@ -58,7 +103,7 @@ function mouseDragged() {
 
 function mouseReleased(){
     pontoproximo = 0;
-    existe = false;
+    existe1 = false;
 }
 
 
@@ -87,7 +132,7 @@ function mouseClicked() {
       append(points, newPoint); 
       curve = deCasteljau(points, nEvaluations);
   }
-  existe = true;
+  existe2 = true;
 }
 
 
@@ -95,11 +140,12 @@ function mouseClicked() {
 function draw() {
   background(255);
   noFill();
-  stroke(0);
+  //stroke(0);
   strokeWeight(2);
 
   // desenhado a cruva de benzier
   beginShape();
+  stroke(cor_curva)
   curve.forEach(point => {
     vertex(point.x, point.y);
   });
@@ -107,18 +153,18 @@ function draw() {
 
   // desenhando as linhas entre pontos
   beginShape();
+  stroke(cor_polic)
       points.forEach(point => {
         vertex(point.x, point.y);
       });
   endShape();
 
   // desenha os pontos
-  stroke('purple'); 
+  stroke(cor_pontc); 
   strokeWeight(5);
   points.forEach(ponto => {
     point(ponto.x, ponto.y);
   });
-  
   
   // Função que mostra quais pontos podem ser selecionados e as areas que nao é possivel criar um ponto
   pontoselecionado = 0;
@@ -134,6 +180,26 @@ function draw() {
   });
   
 }
+/*
+function selecionado(pontos) {
+    let existe = false;
+    let pontoselecionado = 0;
+    pontos.forEach(ponto => {
+      let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
+      if (distancia < 30) {
+          let distancia_proximo = dist(pontos[pontoselecionado].x, points[pontoselecionado].y, mouseX, mouseY);
+          if (distancia <= distancia_proximo) {
+              pontoselecionado = pontos.indexOf(ponto);
+              existe = true;
+          }
+      }
+  });
+  
+  if (existe) {
+      
+  }
+}
+*/
 
 // Função de interpolação
 function interpolate(t, p0, p1) {
