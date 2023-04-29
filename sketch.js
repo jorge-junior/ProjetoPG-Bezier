@@ -6,9 +6,11 @@ function setup() {
 
 // VARIAVEIS
 // Lista de pontos de controle
+let listas = [[]];
+
 let points = [];
 
-
+let posicao = 0;
 
 //cores
 let cor_curva = 'rgb(203,75,203)'
@@ -30,13 +32,33 @@ function sliderChanged(){
   curve = deCasteljau(points, nEvaluations);
 }
 
+let buttonadd = document.getElementById("buttonAdd");
+buttonadd.addEventListener('click', function() {
+    let points = [];
+    append(listas, points);
+    posicao += 1;
+});
+
+
+let buttondel = document.getElementById("buttonDel");
+buttondel.addEventListener('click', function() {
+    listas.splice(posicao, 1);
+    posicao -= 1;
+    if (listas.length == 0) {
+        listas = [[]];
+        posicao = 0;
+    }
+    
+});
+
 // recebe as informaçoes do input do botão clear
 let buttonclear = document.getElementById("buttonClear");
 // limpa a tela caso o botão seja apertado
 buttonclear.addEventListener('click', function() {
-    points = [];
+    listas = [[]];
+    posicao = 0;
     clear();
-    curve = deCasteljau(points, nEvaluations);
+    curve = deCasteljau(listas, nEvaluations);
 });
 
 //ocultar/mostrar curvas
@@ -80,12 +102,12 @@ let pontoproximo = 0;
 let existe1 = false;  
 
 function mousePressed() {
-    points.forEach(ponto => {
+    listas[posicao].forEach(ponto => {
       let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
       if (distancia < 30) {
-          let distancia_proximo = dist(points[pontoproximo].x, points[pontoproximo].y, mouseX, mouseY);
+          let distancia_proximo = dist(listas[posicao][pontoproximo].x, listas[posicao][pontoproximo].y, mouseX, mouseY);
           if (distancia <= distancia_proximo) {
-              pontoproximo = points.indexOf(ponto);
+              pontoproximo = listas[posicao].indexOf(ponto);
               existe1 = true;
           }
       }
@@ -94,10 +116,10 @@ function mousePressed() {
 
 function mouseDragged() {
     if (existe1) {
-        points[pontoproximo].x = mouseX;
-        points[pontoproximo].y = mouseY;
+        listas[posicao][pontoproximo].x = mouseX;
+        listas[posicao][pontoproximo].y = mouseY;
         
-        curve = deCasteljau(points, nEvaluations);
+        curve = deCasteljau(listas[posicao], nEvaluations);
     }
 }
 
@@ -109,28 +131,30 @@ function mouseReleased(){
 
 // função que adicionas os pontos as curva de benzier
 function mouseClicked() {
+  console.log(listas)
+  
   let newPoint = createVector(mouseX, mouseY);
-  if (points.length == 0 && mouseX <= 400 && mouseY <= 400) {
-      append(points, newPoint); 
-      curve = deCasteljau(points, nEvaluations);
+  if (listas[posicao].length == 0 && mouseX <= 400 && mouseY <= 400) {
+      append(listas[posicao], newPoint); 
+      curve = deCasteljau(listas[posicao], nEvaluations);
   }
   
   let existe2 = false;
   pontoexiste = 0;
-  points.forEach(ponto => {
+  listas[posicao].forEach(ponto => {
       let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
       if (distancia < 30) {
-          distancia_proximo = dist(points[pontoexiste].x, points[pontoexiste].y, mouseX, mouseY);
+          distancia_proximo = dist(listas[posicao][pontoexiste].x, listas[posicao][pontoexiste].y, mouseX, mouseY);
           if (distancia <= distancia_proximo) {
-              pontoexiste = points.indexOf(ponto);
+              pontoexiste = listas[posicao].indexOf(ponto);
               existe2 = true;
           }
       }
   });
 
   if (mouseX <= 400 && mouseY <= 400 && !existe2){
-      append(points, newPoint); 
-      curve = deCasteljau(points, nEvaluations);
+      append(listas[posicao], newPoint); 
+      curve = deCasteljau(listas[posicao], nEvaluations);
   }
   existe2 = true;
 }
@@ -140,44 +164,53 @@ function mouseClicked() {
 function draw() {
   background(255);
   noFill();
-  //stroke(0);
-  strokeWeight(2);
+  
+  listas.forEach(lista => {
+      strokeWeight(2);
 
-  // desenhado a cruva de benzier
-  beginShape();
-  stroke(cor_curva)
-  curve.forEach(point => {
-    vertex(point.x, point.y);
-  });
-  endShape();
-
-  // desenhando as linhas entre pontos
-  beginShape();
-  stroke(cor_polic)
-      points.forEach(point => {
+      // desenhado a cruva de benzier
+      curve = deCasteljau(lista, nEvaluations);
+      beginShape();
+      stroke(cor_curva)
+      curve.forEach(point => {
         vertex(point.x, point.y);
       });
-  endShape();
-
-  // desenha os pontos
-  stroke(cor_pontc); 
-  strokeWeight(5);
-  points.forEach(ponto => {
-    point(ponto.x, ponto.y);
+      endShape();
+    
+      // desenhando as linhas entre pontos
+      beginShape();
+      stroke(cor_polic)
+      strokeWeight(2);
+      lista.forEach(point => {
+        vertex(point.x, point.y);
+      });
+      endShape();
+    
+      // desenha os pontos
+      stroke(cor_pontc); 
+      strokeWeight(5);
+      lista.forEach(ponto => {
+        point(ponto.x, ponto.y);
+      });
+    
   });
   
+  
   // Função que mostra quais pontos podem ser selecionados e as areas que nao é possivel criar um ponto
+  
+  /*
   pontoselecionado = 0;
-  points.forEach(ponto => {
+  Listas[posicao].forEach(ponto => {
       let distancia = dist(ponto.x, ponto.y, mouseX, mouseY);
       if (distancia < 30) {
-          let distancia_prox = dist(points[pontoselecionado].x, points[pontoselecionado].y, mouseX, mouseY);
+          let distancia_prox = dist(Listas[posicao][pontoselecionado].x, points[pontoselecionado].y, mouseX, mouseY);
           if (distancia <= distancia_prox) {
-              pontoselecionado = points.indexOf(ponto);
-              ellipse(points[pontoselecionado].x, points[pontoselecionado].y, 30);
+              pontoselecionado = Listas[posicao].indexOf(ponto);
+              ellipse(Listas[posicao][pontoselecionado].x, Listas[posicao][pontoselecionado].y, 30);
           }
       }
   });
+  */
   
 }
 /*
