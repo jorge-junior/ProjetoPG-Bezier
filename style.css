@@ -1,8 +1,15 @@
 html, body {
-    margin: 0;
-    padding: 0;
-  }
-  canvas {
-    display: block;
-  }
-  
+  margin: 0;
+  padding: 0;
+}
+canvas {
+  display: block;
+}
+
+#resultado {
+  font-family: Arial, Helvetica, sans-serif;
+  color : black;
+  font-weight: bold;
+  -webkit-text-stroke-width: 1px; /* largura da borda */
+  -webkit-text-stroke-color: #fff; /* cor da borda */
+}
